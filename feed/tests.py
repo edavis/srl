@@ -11,11 +11,15 @@ class TestFeedModels(TestCase):
     def setUp(self):
         self.owner = autofixture.create_one(User)
 
+    def elements_equal(self, e1, e2):
+        self.assertXMLEqual(
+            etree.tostring(e1), etree.tostring(e2))
+
     def test_feed_to_outline(self):
         feed = autofixture.create_one(Feed, generate_fk=True)
         element = etree.Element("outline", text=feed.name, title=feed.name,
                                 xmlUrl=feed.xml_url, htmlUrl=feed.html_url, type="rss")
-        self.assertXMLEqual(etree.tostring(feed.to_outline()), etree.tostring(element))
+        self.elements_equal(feed.to_outline(), element)
 
     def test_category_to_outline(self):
         category = autofixture.create_one(Category, field_values={
@@ -29,7 +33,7 @@ class TestFeedModels(TestCase):
         category_element = etree.Element("outline", text=category.name)
         for feed in Feed.objects.all():
             category_element.append(feed.to_outline())
-        self.assertXMLEqual(etree.tostring(category.to_outline()), etree.tostring(category_element))
+        self.elements_equal(category.to_outline(), category_element)
 
 class TestFeedUtils(TestCase):
     pass

@@ -1,16 +1,17 @@
-"""
-This file demonstrates writing tests using the unittest module. These will pass
-when you run "manage.py test".
-
-Replace this with more appropriate tests for your application.
-"""
-
+from lxml import etree
+import autofixture
 from django.test import TestCase
+from feed.models import Feed, Category
 
+class TestFeedViews(TestCase):
+    pass
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.assertEqual(1 + 1, 2)
+class TestFeedModels(TestCase):
+    def test_feed_to_outline(self):
+        feed = autofixture.create_one(Feed, generate_fk=True)
+        element = etree.Element("outline", text=feed.name, title=feed.name,
+                                xmlUrl=feed.xml_url, htmlUrl=feed.html_url)
+        self.assertXMLEqual(etree.tostring(feed.to_outline()), etree.tostring(element))
+
+class TestFeedUtils(TestCase):
+    pass

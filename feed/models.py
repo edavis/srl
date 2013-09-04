@@ -1,3 +1,4 @@
+from lxml import etree
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -12,6 +13,13 @@ class Feed(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def to_outline(self):
+        """
+        Return an <outline> element with this Feed's information.
+        """
+        return etree.Element("outline", text=self.name, title=self.name,
+                             xmlUrl=self.xml_url, htmlUrl=self.html_url)
 
 class Category(models.Model):
     name = models.CharField(max_length=50)

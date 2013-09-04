@@ -19,7 +19,8 @@ class Feed(models.Model):
         Return an <outline> element with this Feed's information.
         """
         return etree.Element("outline", text=self.name, title=self.name,
-                             xmlUrl=self.xml_url, htmlUrl=self.html_url)
+                             xmlUrl=self.xml_url, htmlUrl=self.html_url,
+                             type="rss")
 
 class Category(models.Model):
     name = models.CharField(max_length=50)

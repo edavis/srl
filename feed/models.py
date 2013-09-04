@@ -45,3 +45,6 @@ class Category(models.Model):
         for feed in self.feed_set.all():
             parent.append(feed.to_outline())
         return parent
+
+    class Meta:
+        verbose_name_plural = "Categories"

@@ -1,8 +1,12 @@
-from lxml import etree
 import autofixture
+from lxml import etree
+from pathlib import Path
+
 from django.test import TestCase
 from django.contrib.auth.models import User
+
 from feed.models import Feed, Category
+from feed.utils import add_from_opml
 
 class TestFeedViews(TestCase):
     pass
@@ -36,4 +40,17 @@ class TestFeedModels(TestCase):
         self.elements_equal(category.to_outline(), category_element)
 
 class TestFeedUtils(TestCase):
-    pass
+    def setUp(self):
+        self.test_data = Path(__file__).parent()["test_data"]
+        self.owner = autofixture.create_one(User)
+
+    def test_add_from_opml(self):
+        category = autofixture.create_one(Category)
+        nyt = str(self.test_data["nyt.opml"])
+        with open(nyt) as fp:
+            add_from_opml(fp, category, self.owner)
+        self.assertEqual(category.feed_set.count(), 101)
+
+        feed = Feed.objects.get(xml_url="http://www.nytimes.com/services/xml/rss/nyt/pop_top.xml")
+        self.assertEqual(feed.name, "NYT > Most E-mailed Articles")
+        self.assertEqual(feed.html_url, "http://www.nytimes.com/gst/mostemailed.html?partner=rssnyt")

@@ -22,6 +22,9 @@ class Feed(models.Model):
                              xmlUrl=self.xml_url, htmlUrl=self.html_url,
                              type="rss")
 
+    class Meta:
+        ordering = ['name']
+
 class Category(models.Model):
     name = models.CharField(max_length=50)
     slug = models.SlugField()
@@ -32,3 +35,13 @@ class Category(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def to_outline(self):
+        """
+        Create a parent <outline> for the category and then add as
+        children each associated Feed.
+        """
+        parent = etree.Element("outline", text=self.name)
+        for feed in self.feed_set.all():
+            parent.append(feed.to_outline())
+        return parent

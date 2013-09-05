@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 
 from feed.models import Feed, Category
-from feed.utils import add_from_opml
+from feed.utils import add_from_opml, add_rss_feed
 
 class TestFeedViews(TestCase):
     pass
@@ -43,14 +43,23 @@ class TestFeedUtils(TestCase):
     def setUp(self):
         self.test_data = Path(__file__).parent()["test_data"]
         self.owner = autofixture.create_one(User)
+        self.category = autofixture.create_one(Category)
 
     def test_add_from_opml(self):
-        category = autofixture.create_one(Category)
         nyt = str(self.test_data["nyt.opml"])
         with open(nyt) as fp:
-            add_from_opml(fp, category, self.owner)
-        self.assertEqual(category.feed_set.count(), 101)
+            add_from_opml(fp, self.category, self.owner)
+        self.assertEqual(self.category.feed_set.count(), 101)
 
         feed = Feed.objects.get(xml_url="http://www.nytimes.com/services/xml/rss/nyt/pop_top.xml")
         self.assertEqual(feed.name, "NYT > Most E-mailed Articles")
         self.assertEqual(feed.html_url, "http://www.nytimes.com/gst/mostemailed.html?partner=rssnyt")
+
+    def test_rss_feed(self):
+        tpm_rss = str(self.test_data["tpm.xml"])
+        (feed, created) = add_rss_feed(tpm_rss, self.category, self.owner)
+        self.assertEqual(self.category.feed_set.count(), 1)
+
+        self.assertEqual(feed.name, "TPM News")
+        self.assertEqual(feed.xml_url, tpm_rss)
+        self.assertEqual(feed.html_url, "http://news.talkingpointsmemo.com/")

@@ -1,3 +1,4 @@
+import feedparser
 from lxml import etree
 from feed.models import Feed, Category
 
@@ -16,3 +17,14 @@ def add_from_opml(source, category, owner):
             "owner": owner,
         }
         Feed.objects.get_or_create(**kwargs)
+
+def add_rss_feed(feed_url, category, owner):
+    doc = feedparser.parse(feed_url)
+    kwargs = {
+        "name": doc.feed.title,
+        "xml_url": feed_url,
+        "html_url": doc.feed.link,
+        "category": category,
+        "owner": owner,
+    }
+    return Feed.objects.get_or_create(**kwargs)
